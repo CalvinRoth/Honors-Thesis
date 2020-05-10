@@ -1,0 +1,299 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{graphicx}
+\usepackage{graphics}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{fancyhdr}
+\usepackage{amsthm}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Prime Numbers}
+\lhead{Calvin Roth}
+\title{Notes for Prime Numbers}
+\rfoot{Page \thepage}
+\pgfplotsset{compat = 1.16}
+\author{Calvin Roth}
+\date{March 2020}
+\vspace{1mm}
+\begin{document}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lem}{Lemma}[section]
+\newtheorem{claim}[lem]{Claim}
+
+\newcommand{\prob}[1]{\section{} \noindent \textbf{Statement} #1 $ $\\ \textbf{Solution} $ $\\ }
+\newcommand{\soln}{\noindent \textbf{Solution} $ $\\ }
+\newcommand{\sol}{\noindent \textbf{Solution} $ $}
+
+\newcommand{\IC}[1]{\noindent \textbf{Inductive Case} #1 $ $ \\}
+\newcommand{\BC}[1]{\noindent \textbf{Base Case} #1 $ $ \\}
+
+\newcommand{\inner}[1]{\langle #1 | #1\rangle}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\Q}{\mathbb{Q}}
+%% Non Math mode equivalent
+\newcommand{\bR}{$\mathbb{R}$ }
+\newcommand{\bN}{$\mathbb{N}$ }
+\newcommand{\bZ}{$\mathbb{Z}$ }
+\newcommand{\bC}{$\mathbb{C}$ }
+\newcommand{\bQ}{$\mathbb{Q}$ }
+
+\newcommand{\curve}[1]{C($\#1$)}
+
+\newcommand{\set}[1]{\{$#1$\}}
+\newcommand{\setc}[2]{\{$#1$ : $#2$\}}
+\newcommand{\term}[2]{\textbf{Definition} \textit{#1} #2 $ $ \\}
+\makeatletter
+\renewcommand{\@seccntformat}[1]{Chapter \csname the#1\endcsname\quad}
+\makeatother
+
+\maketitle 
+
+\section{Preliminaries}
+
+This section is for chapters 1 and 2 which have a couple useful things
+\begin{equation}
+    \tag{Prime Number Theorem}
+    \pi ( x ) \approx \frac{x }{ln x}
+\end{equation}
+
+\term{Mersenne Number}{The n-th Mersenne number $M_n$ is $M_n = 2^n - 1$}
+\term{Fermat Number}{The n-th fermat number $F_n$ is $F_n = 2^{2^n} - 1$}
+
+\term{Dirichlet Character}{Let D be a positive integers and f a function from \bN to \bC such that 
+    \begin{itemize}
+        \item For all integers m, n $f ( m n ) = f ( m ) f ( n )$
+        \item f is periodic mod D
+        \item $f  ( n ) = 0$ iff $gcd ( n , D )  > 1 $
+    \end{itemize} 
+    Then f is a Dirichlet character to modulus D.
+}
+
+\term{B-Smooth Number}{A number n is B smooth if for a fixed B, no prime factor of n exceeds B. Examples: 12 is 3-smooth and 16 is 2-smooth}
+
+\term{Legendre Symbol}{For an odd prime prime p, the legendre symbol $(\frac{a}{p})$ is defined as 
+    $ ( \frac{a}{p} ) = 
+        \begin{cases} 
+            0 & $if $a \equiv 0 \mod p \\  
+            1 & \text{ if a is a quadratic residue mod p} \\
+            -1 & \text{if a is non-quadratic residue mod p}
+        \end{cases}$
+}
+\setcounter{section}{2}
+\section{}
+
+
+How to tell quickly if a number is prime or not. 
+
+\textbf{Method 1: Trial Division} \\
+Trial Division by every prime up to $\sqrt{n}$. This will for sure work because if n is composite say $n = a * b $ then either $a \leq \sqrt{n}$ or $b \leq \sqrt{n}$ This takes $2 \sqrt{n} / ln(n)$ directly from the approximation of how many primes less than $\sqrt(N)$ there are
+
+
+"It may be interesting to throw out the 50 \%worst numbers and compute the average running time for trial division to completely factor the remaining numbers. This turns out to be $n^c$ ,where $c=1/(2\sqrt(e)) \approx 0.30327$;"
+
+\textbf{ Method 2: Sieving}
+
+Keep a table with largest element N where entry i corresponds to i and contains a list of prime factors of it. At step j, mark j has a factor of $j, j + j,  \cdots j + k j $ while this sum is less than  N
+
+The number of steps is $\sum_{p \leq N} N/p = N ln ln N + O(N)$
+Per element the number of steps needed is $O ( ln ln N )$. 
+Con: This uses a ton of space 
+
+Idea. Convert sieve components to logs to detect smooths. 
+Example 
+For example, say we use the closest integer to the base-2 logarithm. For 12000 this is 14. We also use the approximations lg $2\approx 1$ (this one being exact), lg $3\approx 2$,lg $5\approx 2,lg 7 \approx 3$.The entry now at location 12000 gets changed sequentially to 1, 2, 3, 4, 5, 7,9, 11, 13. This is close enough to the target 14 for us to recognize that 12000 is smooth. In general, if we are searching for B-smooth numbers, then an error smaller than lgB is of no consequence.
+ 
+Apparently this is a useful approximation for speedups but can have both false positives and negatives for B smooth numbers.
+
+You can also sieve polynomials with integer values if you want.
+
+You can speed sieving from taking O(n ln ln n) time to O(n / ln ln n) time. 
+
+\textbf{B smooth Tests}
+Rough complexities per number analyzed: 
+Trial Division: $y^{1 + o(1)}$
+Pollard Rho: $y^{1/2 + o(1)}$
+Elliptic Curve: $y^{o(1)}$
+
+Sieving a L sequential numbers with max value M for y smoothness can be done in L ln ln M ln ln y. 
+
+How this work through an example.
+
+Sequence: 1001-1008 inclusive
+
+Smoothness: 20
+
+
+Step 1: Find the product of all primes less than 20. So 9699690
+
+Step 2: Mod 9699690 by each number. 
+If 9699690 mod x = r then r = ab where $a = gcd(9699690, x)$ and $gcd(b,x) = 1$. WHY?
+Not sure on what steps they are doing here.
+
+\textbf{PseduoPrimes}
+
+% Idea: Get statements of the form if n is prime then some statement S is true about n. This allows for composite n to also hold, but hopefully very few. These are called pseodo primes. 
+
+% Method 1: If n is prime then for any integer a, $a^n = a \mod n$(fermat's little theorem). Composites that also base this for a particular a are called fermat pseudo primes
+
+% Fermat pseduo primes are rare. For a fixed a, as $n \to  \infty$, then fermat pseduo primes are $o(\pi (n))$
+
+% If a number passes for a such that $2 \leq a  < n-1$ then n is called a probable pseudo prime
+
+% If for composite n, $a^n = a \mod n$ holds for all a then n is a carmicheal number.
+
+% Criteria: A number n is carmichael iff n is positive, composite, squarefree, and if $p \| n \to p-1 \| n-1$
+
+% Number of carmichael numbers C(x) conjecture: For large enough x, $C(x) > x^{1- \epsilon}$. We have proved that this is true at for $x^{1/3}$
+
+
+% There are infinitely many Carmichael pseodprimes. What we would like is a test that depends on some choice( for Fermat test it is the a in $a ^ {n-1} \equiv 1 \mod n$) such that there every composiste will fail some fixed non zero fraction of the possible tests. That is we don't have the equivalent of Carmichael numbers. 
+
+%  Suppose that n is an odd prime and $n-1 = 2^s t$ where t is odd. Then if a is not divisble by n either
+% $a^t = 1 \mod 1$ or $a^{2^i t} = -1, \textit{for some i } 0 \leq i \leq s-1 $
+
+% \term{Strong Pseudoprime base a}{n is a strong pseudoprime base a is n is an odd composite and the above condition holds}
+
+% Number of strong pseudo primes S(n), $S(n) \leq 1/4 \phi(n)$ where $phi$ is euler's function. 
+
+% This implies that for any composite n and a pair there is a 3/4 chance a exposes n as a composite.
+
+% Randomly repeatedly selecting an a and testing this condition is the Miller Rabin primality test. This is a good probabilistic algorithm. 
+% With k rounds the probablity that an odd composite fails all the tests is $ < (1/4) ^ k$. 
+
+% The largest least witness in a range grows slowly. Specifically $W(n) < 2 ln^2 n$ 
+
+
+\textbf{Lucas PseudoPrimes}
+
+Let $u_j$ be the jth fibonacci number and let $e_n = (\frac{n}{5})$ that is 1 is n is a quadratic residue mod 5, 0 if n = 0 mod 5 and -1 else. Then if n is prime $u_{n-e_n} = 0 \mod n$
+
+Fact: There is currently no known composite that is a $\pm 2 \mod 5$ lucas pseduo prime and a base-2 pseduoprime
+
+
+Consider the polynomial $f(x) = x^2 - ax + b$ with $\Delta = a^2 - 4b$ not a square. Then define the sequences
+$$ U_J (a,b) = \frac{x^j - (a - x)^j}{x - (a -x)} \mod f(x) $$ and 
+
+$$ V_j (a,b) = x^j + (a - x)^j \mod f(x) $$
+
+These satisfy
+$U_j = a U_{j-1} - b U_{j-2}$ and $V_j = aV_{j-1} - bV_{j-2}$
+
+with initial values $U_0 = 0, U_1 = 1, V_0 = 2, V_1 = a$ 
+
+If P is a prime with $gcd(p, 2b\Delta)= 1$ then $U_{p - \frac{\Delta}{p}} = 0 \mod p$
+
+If a composite n passes this test wrt a particular polynomial, then n is a lucas pseudo prime.
+
+Grantham's Frob. Test is an extension over this to arbitrary interger coefficient polynomials. 
+
+For quadratic polynomial f(x), n is a frob. pseudoprime if 
+$x^n \begin{cases}
+a-x mod(f(n)) &if \frac{\Delta}{n} = -11 \\
+x mod (f(n)) &if \frac{\Delta}{n} = 1
+\end{cases}$
+
+
+Strong Frob. pseudoprimes are also a thing and relevant since you can prove if n a squarefree divisor and not divided by any prime less than 50000 then it is a pseudo prime for at most 1/7710 of all quadratic polynomials.
+
+% \textbf{Counting primes}
+
+% Denote by $phi(x,y) = | \{1 \leq n \leq x : \textit{each prime dividing n is greater than y} \} |$
+
+
+% We have the following identity: $\pi(x) - \pi (\sqrt(x)) + 1 = \phi (x,\sqrt{x})$
+
+% Let $\phi_k (x,y) = $ number of n in $1 \leq n \leq x$ where n has k factors each greater than y.
+
+
+% From this we can derive that $\phi(x, x^{1/3}) = 1 + \pi (x) - \pi (x^{1/3}) - \phi_2 (x, x^{1/3}$
+
+
+\section{}
+
+
+\section{}
+
+This chapter covers exponential time factoring algorithms. I'm going to write about the novel ones
+\textbf{Pollard Rho Idea} 
+If we had a random function f on our range we would expect $O(\sqrt{p})$ steps before we found a cycle that is two integers i and j such that $f^i ( s ) \equiv f^j (s ) \mod p$. We can use this idea to computer $F(x ) = f(x ) \mod n$ and take $gcd ( F^i (s) - F^{2i} (s ), n ) $ and if we get a value not equal to n we have found a non trivial divisor.
+
+Open question what is a good f to pick in the sense we do have to iterate too much until we find a pair of non distinct elements. 
+\textbf{Pollard p - 1}
+Find all the primes less than some bound B and the highest $q_i$ for each such that $p_i ^ {q_i} \leq B$ Then take $gcd ( 2 ^ {p_1 ^ {q_1} \cdots p_k ^ {q_k}} - 1, n)$ and hope that the result is not 1 or n. 
+
+Quadratic forms are also in this chapter but I didn't feel like typesetting all of that tonight. 
+\section{}
+Quadratic Sieve. 
+The idea is to find a integer a such is a nontrivial square root of 1 mod n. We do this by solving $x^2 \equiv y^2 \mod n $ to get that $x y ^ {-1} $ is a square root of 1. We do this by collecting a set of $x_i ^2 = a_i$ where $\Pi _i a_i $ is a square. We can use linear algebra to determine how many $x_i$s we need. It is a nice method in how it works out. 
+
+Number field sieve.
+Suppose for motivation we had $\theta_1 , \theta_2, \cdots, \theta_k$ in an alebraic ring $\gamma_1, \gamma_2, \cdots, \gamma_k$ in a $\Z _n$ and a homomorphsim between this algebraic ring and $\Z_n$ and the product of the thetas is a square and likewise for the gammas  then we can derive a $u^2 \equiv v^2 \mod n$
+
+The complexity of NFS.
+The expected number of integers we need such that a subset of them has a product that is a square is $L(X)^{\sqrt{2} + o(1)}$ where $L(x) = e ^ {\sqrt{ln n ln ln n }}$ and X is the bound we have on the integers we are picking from. The complexity of NFS depends on how small we can make X. We can derive that we should have $ln X \approx \frac{2}{d} ln n$. If we set $d \approx \frac{3 ln n}{ln ln n}^\frac{1}{3}$ we get that the total run time is $L(X)^{\sqrt{2} + o(1)}$ actually 
+
+\section{}
+A projective curve is nonsingular if there is no point where all three derivatives are 0. 
+\term{Weierstrass Form}{A Curve is in Weierstrass form is it of the form $y^2 = x^3 + ax + b$ or $y^2 = x^3 + Cx^2 + Ax + B$}
+A curve is nonsingular in the first form if $4a^3 + 27b^2 \neq 0$. The point at infinity [0,1,0] is denoted by O.
+Let $E(F)$ be the points with coordinates in F that satisfy the curve equation and O. 
+
+With the following addition operation this is a group. 
+
+$P_1 + P_2 = \begin{cases}
+O & \text{ if } P_1 = P_2 \\
+(x_3, y_3) & with x_3 = m^2 - C - x_1 - x_2, -y_3 = m ( x_3 - x_1 ) + y_1
+\end{cases}$
+
+where $m = \begin{cases}
+\frac{y_2 - y_1}{x_2 - x_1} & if x_2 \neq x_1 \\
+\frac{3x_1^2 + 2Cx_1 + A}{2y_1} & if x_2 = x_1 
+\end{cases}$
+
+This is an abelian group. 
+
+The order of an elliptic curve in the field $F_{p_k}$ is given by $\#E(F_{p_k}) = p^k + 1 + \sum_{x \in F_{p^k}} q ( x^3 + ax + b$
+where $q ( u ) = \begin{cases} 1 & \text{ u is a nonzero square} \\ 0 & \text { u = 0} \\ -1 & else \end{cases} $
+
+A more useful bound is $| \#E - (p^k  + 1) | \leq 2 \sqrt{p^k}$
+
+ECM 
+Idea is to pick a curve and points P and Q such that P + Q is undefined because when trying to find an inverse that we would need in the in calculating m we would actually a non trivial factor of n. This is analogous to pollard p - 1 except that if we fail to find a factor we can just pick a different curve. 
+
+Elliptic curve primality proving. 
+Suppose we have two integers s and m with $s | m$ and a point on our elliptic curve P such that $[m] P = 0$ but for every q dividing s we have $[m / q ] P \neq O$. Then if p is a prime that divides n we have that $\#E ( F_p ) \equiv 0 mod s$ also if $s > (n^\frac{1}{4} + 1)^ 2$ then n is prime. 
+Using this theorem we can prove in expected $O(ln^k n)$ that a suspected prime is prime. 
+
+\setcounter{section}{8}
+\section{}
+
+Complexity of multiplying two numbers of size N is $O(ln^2 N)$. We can do better and get it all the all down to $O(ln N ( ln ln N ) ( ln ln ln N ))$
+
+Suppose we write $x = x_0 + x_1 W$ where W is about half the size of x. Then $x y  = \frac{t + u}{2} - v + \frac{t - u}{2} W + v W^2$ where $t = (x_0 + x_1 ) (y_0 + y_1), u = (x_0 - x_1) (y_0 - y_1 ), v = x_1 y_1$. This needs olnly 3 size-W multiplies instead of 4. Complexity $O ( ( ln N) ^ {\frac{ln 3}{ln 2}} ) $ operations.
+
+\noindent Toom-Cook: write x and y has polynomials in some base. Then the product of these polynomials can be reconstructed by evaluating the polynomial are $2D -1$ separate values we can reconstruct the final polynomial that is their product, the answer. 
+
+\term{Cyclic Convolution}{A cyclic convolution of two D-length signals x, y is given by the sequence $z_n = \sum_{i + j \equiv n mod D} x_i y_j$}
+\term{Negayclic Convolution}{A cyclic convolution of two D-length signals x, y is given by the sequence $v_n = \sum_{i + j \equiv n mod D} x_i y_j - \sum_{i+j\equiv D +n } x_i y_j $ }
+\term{Acyclic Convolution}{A cyclic convolution of two D-length signals x, y is given by the sequence $u_n = \sum_{i + j \equiv n mod D} x_i y_j$ having 2D elements plus the final element being 0. }
+
+\begin{theorem}{Convolution Theorem}
+    Let signals x and y have length D. Then the cyclic convolution of x, y satisfies $x \times y = DFT^{-1} (DFT (x) * DFT(y))$
+\end{theorem}
+
+Using this basic idea we can do multiplications with $O( D ln D)$ where D is the number of bits. With Nussbaumer's enchancement we can bring this all the way down to $O(n ln n ln ln n)$
+\end{document}
